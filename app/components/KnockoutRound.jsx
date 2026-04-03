@@ -1,0 +1,50 @@
+"use client";
+
+export default function KnockoutRound({ title, subtitle, pairs, winners, onSelect, onNext, nextLabel }) {
+  const isComplete = pairs.every((_, i) => winners[i]);
+
+  return (
+    <main className="max-w-xl mx-auto px-4 py-8">
+      <div className="text-center mb-6">
+        <h1 className="text-2xl font-bold text-yellow-400">{title}</h1>
+        {subtitle && <p className="text-gray-400 text-sm mt-1">{subtitle}</p>}
+      </div>
+
+      <div className="space-y-3">
+        {pairs.map((pair, i) => (
+          <div key={i} className="bg-gray-900 border border-gray-800 rounded-xl p-3">
+            <p className="text-xs text-gray-500 mb-2 text-center">Match {i + 1}</p>
+            <div className="flex gap-2">
+              {pair.map((team) => (
+                <button
+                  key={team}
+                  onClick={() => onSelect(i, team)}
+                  className={`flex-1 py-2.5 px-2 rounded-lg border text-sm font-semibold transition ${
+                    winners[i] === team
+                      ? "bg-yellow-400 text-gray-900 border-yellow-400"
+                      : "bg-gray-800 text-gray-300 border-gray-700 hover:border-yellow-400"
+                  }`}
+                >
+                  {team}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-6">
+        <button
+          disabled={!isComplete}
+          onClick={onNext}
+          className="w-full bg-yellow-400 text-gray-900 font-bold py-3 rounded-lg hover:bg-yellow-300 transition disabled:opacity-40"
+        >
+          {nextLabel || "Next →"}
+        </button>
+        {!isComplete && (
+          <p className="text-center text-gray-500 text-xs mt-2">Select a winner for every match</p>
+        )}
+      </div>
+    </main>
+  );
+}
