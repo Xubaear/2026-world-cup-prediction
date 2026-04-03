@@ -10,7 +10,7 @@ export default function FinalPage() {
 
   useEffect(() => {
     if (!localStorage.getItem("predId")) { router.push("/"); return; }
-    setTeams(JSON.parse(localStorage.getItem("finalTeams") || "[]"));
+    setTeams(JSON.parse(localStorage.getItem("sfWinners") || "[]"));
   }, [router]);
 
   const handleSubmit = async () => {
@@ -39,7 +39,7 @@ export default function FinalPage() {
             <button
               key={team}
               onClick={() => setChampion(team)}
-              className={`flex-1 py-4 rounded-xl border text-lg font-bold transition ${
+              className={`flex-1 py-4 rounded-xl border text-base font-bold transition ${
                 champion === team
                   ? "bg-yellow-400 text-gray-900 border-yellow-400"
                   : "bg-gray-900 text-gray-300 border-gray-700 hover:border-yellow-400"

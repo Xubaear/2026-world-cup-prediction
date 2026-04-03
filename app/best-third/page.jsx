@@ -29,6 +29,8 @@ export default function BestThirdPage() {
       body: JSON.stringify({ bestThirds: selected, qualified32 }),
     });
 
+    // Store group picks and best thirds for bracket building
+    localStorage.setItem("bestThirds", JSON.stringify(selected));
     localStorage.setItem("qualified32", JSON.stringify(qualified32));
     router.push("/round-of-32");
   };

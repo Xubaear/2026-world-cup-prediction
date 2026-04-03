@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { R16_BRACKET } from "@/lib/groups";
 import KnockoutRound from "@/app/components/KnockoutRound";
 
 export default function RoundOf16Page() {
@@ -10,9 +11,8 @@ export default function RoundOf16Page() {
 
   useEffect(() => {
     if (!localStorage.getItem("predId")) { router.push("/"); return; }
-    const teams = JSON.parse(localStorage.getItem("roundOf16Teams") || "[]");
-    const p = [];
-    for (let i = 0; i < teams.length; i += 2) p.push([teams[i], teams[i + 1]]);
+    const r32 = JSON.parse(localStorage.getItem("r32Winners") || "[]");
+    const p = R16_BRACKET.map(([a, b]) => [r32[a], r32[b]]);
     setPairs(p);
     setWinners(new Array(p.length).fill(""));
   }, [router]);
@@ -26,10 +26,19 @@ export default function RoundOf16Page() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ roundOf16: winners }),
     });
-    localStorage.setItem("quarterFinalTeams", JSON.stringify(winners));
+    localStorage.setItem("r16Winners", JSON.stringify(winners));
     router.push("/quarterfinal");
   };
 
   if (!pairs.length) return null;
-  return <KnockoutRound title="Round of 16" pairs={pairs} winners={winners} onSelect={onSelect} onNext={handleNext} nextLabel="Next → Quarterfinal" />;
+  return (
+    <KnockoutRound
+      title="Round of 16"
+      pairs={pairs}
+      winners={winners}
+      onSelect={onSelect}
+      onNext={handleNext}
+      nextLabel="Next → Quarterfinal"
+    />
+  );
 }

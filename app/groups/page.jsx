@@ -42,6 +42,7 @@ export default function GroupsPage() {
       body: JSON.stringify({ groupPredictions: picks, qualified24, thirds }),
     });
 
+    localStorage.setItem("groupPicks", JSON.stringify(picks));
     localStorage.setItem("thirds", JSON.stringify(thirds));
     localStorage.setItem("qualified24", JSON.stringify(qualified24));
     router.push("/best-third");
@@ -49,9 +50,9 @@ export default function GroupsPage() {
 
   const rankLabel = { first: "1st", second: "2nd", third: "3rd" };
   const rankColor = {
-    first: "bg-yellow-400 text-gray-900 border-yellow-400",
+    first: "bg-green-500 text-white border-green-500",
     second: "bg-blue-500 text-white border-blue-500",
-    third: "bg-green-600 text-white border-green-600",
+    third: "bg-yellow-400 text-gray-900 border-yellow-400",
   };
 
   return (

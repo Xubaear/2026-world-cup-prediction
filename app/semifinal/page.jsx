@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { SF_BRACKET } from "@/lib/groups";
 import KnockoutRound from "@/app/components/KnockoutRound";
 
 export default function SemifinalPage() {
@@ -10,9 +11,8 @@ export default function SemifinalPage() {
 
   useEffect(() => {
     if (!localStorage.getItem("predId")) { router.push("/"); return; }
-    const teams = JSON.parse(localStorage.getItem("semiFinalTeams") || "[]");
-    const p = [];
-    for (let i = 0; i < teams.length; i += 2) p.push([teams[i], teams[i + 1]]);
+    const qf = JSON.parse(localStorage.getItem("qfWinners") || "[]");
+    const p = SF_BRACKET.map(([a, b]) => [qf[a], qf[b]]);
     setPairs(p);
     setWinners(new Array(p.length).fill(""));
   }, [router]);
@@ -26,10 +26,19 @@ export default function SemifinalPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ semiFinal: winners }),
     });
-    localStorage.setItem("finalTeams", JSON.stringify(winners));
+    localStorage.setItem("sfWinners", JSON.stringify(winners));
     router.push("/final");
   };
 
   if (!pairs.length) return null;
-  return <KnockoutRound title="Semifinal" pairs={pairs} winners={winners} onSelect={onSelect} onNext={handleNext} nextLabel="Next → Final" />;
+  return (
+    <KnockoutRound
+      title="Semifinal"
+      pairs={pairs}
+      winners={winners}
+      onSelect={onSelect}
+      onNext={handleNext}
+      nextLabel="Next → Final"
+    />
+  );
 }
