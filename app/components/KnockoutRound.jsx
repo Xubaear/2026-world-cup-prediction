@@ -12,8 +12,7 @@ export default function KnockoutRound({ title, subtitle, pairs, winners, onSelec
 
       <div className="space-y-3">
         {pairs.map((pair, i) => (
-          <div key={i} className="bg-gray-900 border border-gray-800 rounded-xl p-3">
-            <p className="text-xs text-gray-500 mb-2 text-center">Match {i + 1}</p>
+          <div key={i} className="bg-gray-900 border border-gray-800 rounded-xl p-2">
             <div className="flex gap-2">
               {pair.map((team) => (
                 <button
