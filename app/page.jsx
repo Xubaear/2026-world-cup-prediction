@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function HomePage() {
   const [name, setName] = useState("");
@@ -35,7 +36,7 @@ export default function HomePage() {
     <main className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-md space-y-6">
         <div className="text-center">
-          <div className="text-6xl mb-3">⚽</div>
+          <Image src="/WC26_Logo.png" alt="FIFA World Cup 2026" width={120} height={120} className="mx-auto mb-3 object-contain" />
           <h1 className="text-3xl font-bold text-yellow-400">FIFA World Cup 2026</h1>
           <p className="text-gray-400 mt-2">Make your full tournament prediction!</p>
         </div>
@@ -62,10 +63,10 @@ export default function HomePage() {
         {/* Admin button */}
         <div className="text-center">
           <button
-            onClick={() => router.push("/admin")}
+            onClick={() => { sessionStorage.removeItem("adminAuthed"); router.push("/admin"); }}
             className="text-gray-500 hover:text-gray-300 text-sm border border-gray-700 px-4 py-2 rounded-lg hover:border-gray-500 transition"
           >
-            🔐 Admin Panel
+            🔐 xubaear
           </button>
         </div>
       </div>

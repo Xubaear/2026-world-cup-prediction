@@ -1,6 +1,14 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
+
+const CHAMPION_GIFS = {
+  "Portugal": "/cr7.gif",
+  "Brazil": "/neymar.gif",
+  "Argentina": "/messi.gif",
+  "France": "/mbappe.gif",
+};
 
 export default function DonePage() {
   const [name, setName] = useState("");
@@ -11,10 +19,16 @@ export default function DonePage() {
     setChampion(localStorage.getItem("champion") || "");
   }, []);
 
+  const gif = CHAMPION_GIFS[champion];
+
   return (
     <main className="min-h-screen flex items-center justify-center px-4">
       <div className="text-center space-y-4 max-w-sm">
-        <div className="text-6xl">🎉</div>
+        {gif ? (
+          <Image src={gif} alt={champion} width={200} height={200} className="mx-auto rounded-xl object-contain" unoptimized />
+        ) : (
+          <div className="text-6xl">🎉</div>
+        )}
         <h1 className="text-2xl font-bold text-white">Prediction Submitted!</h1>
         <p className="text-gray-400">
           Thanks <span className="text-yellow-400 font-semibold">{name}</span>! You picked{" "}

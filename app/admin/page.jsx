@@ -1,9 +1,16 @@
 "use client";
 import { useState, useEffect } from "react";
+import Image from "next/image";
 
 export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [authed, setAuthed] = useState(false);
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    if (sessionStorage.getItem("adminAuthed")) setAuthed(true);
+    setChecking(false);
+  }, []);
   const [error, setError] = useState("");
   const [predictions, setPredictions] = useState([]);
   const [expanded, setExpanded] = useState(null);
@@ -16,7 +23,7 @@ export default function AdminPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password }),
     });
-    if (res.ok) { setAuthed(true); setError(""); }
+    if (res.ok) { setAuthed(true); sessionStorage.setItem("adminAuthed", "1"); setError(""); }
     else setError("Wrong password!");
   };
 
@@ -33,19 +40,29 @@ export default function AdminPage() {
     p.finalWinner?.toLowerCase().includes(search.toLowerCase())
   );
 
+  if (checking) return null;
+
   // Stats
   const winnerCount = {};
+  const runnerUpCount = {};
+  const thirdCount = {};
   predictions.forEach((p) => {
     if (p.finalWinner) winnerCount[p.finalWinner] = (winnerCount[p.finalWinner] || 0) + 1;
+    const sf = p.semiFinal || [];
+    const ru = sf.find((t) => t !== p.finalWinner);
+    if (ru) runnerUpCount[ru] = (runnerUpCount[ru] || 0) + 1;
+    if (p.thirdPlace) thirdCount[p.thirdPlace] = (thirdCount[p.thirdPlace] || 0) + 1;
   });
   const topPick = Object.entries(winnerCount).sort((a, b) => b[1] - a[1])[0];
+  const topRunnerUp = Object.entries(runnerUpCount).sort((a, b) => b[1] - a[1])[0];
+  const topThird = Object.entries(thirdCount).sort((a, b) => b[1] - a[1])[0];
 
   if (!authed) {
     return (
       <main className="min-h-screen flex items-center justify-center px-4">
         <form onSubmit={login} className="bg-gray-900 border border-gray-800 rounded-2xl p-8 w-full max-w-sm space-y-4">
           <div className="text-center">
-            <div className="text-4xl mb-2">🔐</div>
+            <Image src="/WC26_Logo.png" alt="WC Logo" width={60} height={60} className="mx-auto mb-2 object-contain" />
             <h1 className="text-2xl font-bold text-yellow-400">Admin Login</h1>
           </div>
           <input
@@ -70,17 +87,30 @@ export default function AdminPage() {
   return (
     <main className="max-w-5xl mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-yellow-400">⚽ Admin Dashboard</h1>
+        <h1 className="text-2xl font-bold text-yellow-400 flex items-center gap-2">
+          <Image src="/WC26_Logo.png" alt="WC Logo" width={32} height={32} className="object-contain" />
+          Admin Dashboard
+        </h1>
         <span className="text-gray-400 text-sm">{predictions.length} total predictions</span>
       </div>
 
       {/* Stats */}
       {topPick && (
-        <div className="grid grid-cols-2 gap-3 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
             <p className="text-gray-400 text-xs mb-1">Most Predicted Champion</p>
             <p className="text-yellow-400 font-bold text-xl">{topPick[0]}</p>
             <p className="text-gray-500 text-xs">{topPick[1]} votes</p>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+            <p className="text-gray-400 text-xs mb-1">Most Predicted Runner-up</p>
+            <p className="text-blue-400 font-bold text-xl">{topRunnerUp?.[0] || "—"}</p>
+            <p className="text-gray-500 text-xs">{topRunnerUp?.[1] || 0} votes</p>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+            <p className="text-gray-400 text-xs mb-1">Most Predicted 3rd Place</p>
+            <p className="text-orange-400 font-bold text-xl">{topThird?.[0] || "—"}</p>
+            <p className="text-gray-500 text-xs">{topThird?.[1] || 0} votes</p>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
             <p className="text-gray-400 text-xs mb-1">Total Participants</p>
@@ -113,12 +143,9 @@ export default function AdminPage() {
           </thead>
           <tbody>
             {filtered.map((p, i) => {
-              // Get runner-up and 3rd from semifinal/final data
               const semiFinal = p.semiFinal || [];
               const runnerUp = semiFinal.find((t) => t !== p.finalWinner) || "—";
-              const thirdPlace = p.quarterFinal
-                ? p.quarterFinal.find((t) => !semiFinal.includes(t)) || "—"
-                : "—";
+              const thirdPlace = p.thirdPlace || "—";
 
               return (
                 <tr key={p._id} className="border-t border-gray-800 hover:bg-gray-900 transition">

@@ -4,6 +4,9 @@ import Header from "./components/Header";
 export const metadata = {
   title: "FIFA World Cup 2026 Predictions",
   description: "Predict the 2026 World Cup!",
+  icons: {
+    icon: "/WC26_Logo.png",
+  },
 };
 
 export default function RootLayout({ children }) {
