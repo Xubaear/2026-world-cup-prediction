@@ -18,6 +18,9 @@ export default function HomePage() {
       });
       const data = await res.json();
       if (!data.id) throw new Error("No ID returned");
+      // clear all previous prediction data
+      ["predId","predName","groupPicks","thirds","qualified24","bestThirds","qualified32",
+       "r32Winners","r16Winners","qfWinners","sfWinners","champion"].forEach(k => localStorage.removeItem(k));
       localStorage.setItem("predId", data.id);
       localStorage.setItem("predName", name.trim());
       router.push("/groups");
