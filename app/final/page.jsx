@@ -32,7 +32,7 @@ export default function FinalPage() {
       <div className="w-full max-w-md space-y-6">
         <div className="relative text-center">
           <button
-            onClick={() => router.push("/semifinal")}
+            onClick={() => router.push("/third-place")}
             className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-yellow-400 transition text-sm"
           >
             ← Back

@@ -22,13 +22,16 @@ export default function SemifinalPage() {
 
   const handleNext = async () => {
     const id = localStorage.getItem("predId");
+    // save losers for 3rd place match
+    const losers = pairs.map((pair, i) => pair.find((t) => t !== winners[i]));
+    localStorage.setItem("sfLosers", JSON.stringify(losers));
     await fetch(`/api/predictions/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ semiFinal: winners }),
     });
     localStorage.setItem("sfWinners", JSON.stringify(winners));
-    router.push("/final");
+    router.push("/third-place");
   };
 
   if (!pairs.length) return null;
@@ -39,7 +42,7 @@ export default function SemifinalPage() {
       winners={winners}
       onSelect={onSelect}
       onNext={handleNext}
-      nextLabel="Next → Final"
+      nextLabel="Next → 3rd Place"
       onBack={() => router.push("/quarterfinal")}
     />
   );
