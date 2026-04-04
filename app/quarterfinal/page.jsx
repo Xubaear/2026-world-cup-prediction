@@ -14,7 +14,8 @@ export default function QuarterfinalPage() {
     const r16 = JSON.parse(localStorage.getItem("r16Winners") || "[]");
     const p = QF_BRACKET.map(([a, b]) => [r16[a], r16[b]]);
     setPairs(p);
-    setWinners(new Array(p.length).fill(""));
+    const saved = JSON.parse(localStorage.getItem("qfWinners") || "[]");
+    setWinners(saved.length === p.length ? saved : new Array(p.length).fill(""));
   }, [router]);
 
   const onSelect = (i, team) => setWinners((prev) => { const w = [...prev]; w[i] = team; return w; });
@@ -39,6 +40,7 @@ export default function QuarterfinalPage() {
       onSelect={onSelect}
       onNext={handleNext}
       nextLabel="Next → Semifinal"
+      onBack={() => router.push("/round-of-16")}
     />
   );
 }

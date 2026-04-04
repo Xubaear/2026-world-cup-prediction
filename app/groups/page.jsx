@@ -10,7 +10,9 @@ export default function GroupsPage() {
   );
 
   useEffect(() => {
-    if (!localStorage.getItem("predId")) router.push("/");
+    if (!localStorage.getItem("predId")) { router.push("/"); return; }
+    const saved = JSON.parse(localStorage.getItem("groupPicks") || "null");
+    if (saved) setPicks(saved);
   }, [router]);
 
   const select = (group, rank, team) => {
@@ -57,7 +59,13 @@ export default function GroupsPage() {
 
   return (
     <main className="max-w-2xl mx-auto px-4 py-8">
-      <div className="text-center mb-6">
+      <div className="relative text-center mb-6">
+        <button
+          onClick={() => router.push("/")}
+          className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-yellow-400 transition text-sm"
+        >
+          ← Back
+        </button>
         <h1 className="text-2xl font-bold text-yellow-400">Group Stage Predictions</h1>
         <p className="text-gray-400 text-sm mt-1">Pick 1st, 2nd, and 3rd for each group</p>
       </div>

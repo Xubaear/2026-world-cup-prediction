@@ -53,7 +53,8 @@ export default function RoundOf32Page() {
     });
 
     setPairs(p);
-    setWinners(new Array(p.length).fill(""));
+    const saved = JSON.parse(localStorage.getItem("r32Winners") || "[]");
+    setWinners(saved.length === p.length ? saved : new Array(p.length).fill(""));
   }, [router]);
 
   const onSelect = (i, team) =>
@@ -80,6 +81,7 @@ export default function RoundOf32Page() {
       onSelect={onSelect}
       onNext={handleNext}
       nextLabel="Next → Round of 16"
+      onBack={() => router.push("/best-third")}
     />
   );
 }

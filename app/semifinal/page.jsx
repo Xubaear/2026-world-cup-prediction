@@ -14,7 +14,8 @@ export default function SemifinalPage() {
     const qf = JSON.parse(localStorage.getItem("qfWinners") || "[]");
     const p = SF_BRACKET.map(([a, b]) => [qf[a], qf[b]]);
     setPairs(p);
-    setWinners(new Array(p.length).fill(""));
+    const saved = JSON.parse(localStorage.getItem("sfWinners") || "[]");
+    setWinners(saved.length === p.length ? saved : new Array(p.length).fill(""));
   }, [router]);
 
   const onSelect = (i, team) => setWinners((prev) => { const w = [...prev]; w[i] = team; return w; });
@@ -39,6 +40,7 @@ export default function SemifinalPage() {
       onSelect={onSelect}
       onNext={handleNext}
       nextLabel="Next → Final"
+      onBack={() => router.push("/quarterfinal")}
     />
   );
 }

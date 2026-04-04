@@ -11,6 +11,7 @@ export default function FinalPage() {
   useEffect(() => {
     if (!localStorage.getItem("predId")) { router.push("/"); return; }
     setTeams(JSON.parse(localStorage.getItem("sfWinners") || "[]"));
+    setChampion(localStorage.getItem("champion") || "");
   }, [router]);
 
   const handleSubmit = async () => {
@@ -29,7 +30,13 @@ export default function FinalPage() {
   return (
     <main className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-md space-y-6">
-        <div className="text-center">
+        <div className="relative text-center">
+          <button
+            onClick={() => router.push("/semifinal")}
+            className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-yellow-400 transition text-sm"
+          >
+            ← Back
+          </button>
           <div className="text-5xl mb-2">🏆</div>
           <h1 className="text-2xl font-bold text-yellow-400">The Final</h1>
           <p className="text-gray-400 text-sm mt-1">Who wins the World Cup?</p>

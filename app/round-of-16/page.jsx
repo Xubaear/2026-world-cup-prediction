@@ -14,7 +14,8 @@ export default function RoundOf16Page() {
     const r32 = JSON.parse(localStorage.getItem("r32Winners") || "[]");
     const p = R16_BRACKET.map(([a, b]) => [r32[a], r32[b]]);
     setPairs(p);
-    setWinners(new Array(p.length).fill(""));
+    const saved = JSON.parse(localStorage.getItem("r16Winners") || "[]");
+    setWinners(saved.length === p.length ? saved : new Array(p.length).fill(""));
   }, [router]);
 
   const onSelect = (i, team) => setWinners((prev) => { const w = [...prev]; w[i] = team; return w; });
@@ -39,6 +40,7 @@ export default function RoundOf16Page() {
       onSelect={onSelect}
       onNext={handleNext}
       nextLabel="Next → Quarterfinal"
+      onBack={() => router.push("/round-of-32")}
     />
   );
 }

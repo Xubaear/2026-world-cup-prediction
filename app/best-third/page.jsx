@@ -10,6 +10,8 @@ export default function BestThirdPage() {
   useEffect(() => {
     if (!localStorage.getItem("predId")) { router.push("/"); return; }
     setThirds(JSON.parse(localStorage.getItem("thirds") || "[]"));
+    const saved = JSON.parse(localStorage.getItem("bestThirds") || "[]");
+    if (saved.length) setSelected(saved.map((t) => t.team || t));
   }, [router]);
 
   const toggle = (team) => {
@@ -22,6 +24,9 @@ export default function BestThirdPage() {
     const id = localStorage.getItem("predId");
     const qualified24 = JSON.parse(localStorage.getItem("qualified24") || "[]");
     const qualified32 = [...qualified24, ...selected];
+    const thirds = JSON.parse(localStorage.getItem("thirds") || "[]");
+    // keep { group, team } format for bracket building
+    const bestThirdsWithGroup = thirds.filter((t) => selected.includes(t.team));
 
     await fetch(`/api/predictions/${id}`, {
       method: "PATCH",
@@ -29,15 +34,20 @@ export default function BestThirdPage() {
       body: JSON.stringify({ bestThirds: selected, qualified32 }),
     });
 
-    // Store group picks and best thirds for bracket building
-    localStorage.setItem("bestThirds", JSON.stringify(selected));
+    localStorage.setItem("bestThirds", JSON.stringify(bestThirdsWithGroup));
     localStorage.setItem("qualified32", JSON.stringify(qualified32));
     router.push("/round-of-32");
   };
 
   return (
     <main className="max-w-md mx-auto px-4 py-8">
-      <div className="text-center mb-6">
+      <div className="relative text-center mb-6">
+        <button
+          onClick={() => router.push("/groups")}
+          className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-yellow-400 transition text-sm"
+        >
+          ← Back
+        </button>
         <h1 className="text-2xl font-bold text-yellow-400">Best 3rd Place Teams</h1>
         <p className="text-gray-400 text-sm mt-1">Select 8 teams to advance ({selected.length}/8)</p>
       </div>
