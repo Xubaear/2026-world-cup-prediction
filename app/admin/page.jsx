@@ -6,15 +6,24 @@ export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [authed, setAuthed] = useState(false);
   const [checking, setChecking] = useState(true);
+  const [error, setError] = useState("");
+  const [predictions, setPredictions] = useState([]);
+  const [expanded, setExpanded] = useState(null);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     if (sessionStorage.getItem("adminAuthed")) setAuthed(true);
     setChecking(false);
   }, []);
-  const [error, setError] = useState("");
-  const [predictions, setPredictions] = useState([]);
-  const [expanded, setExpanded] = useState(null);
-  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    if (!authed) return;
+    fetch("/api/predictions")
+      .then((r) => r.json())
+      .then((data) => Array.isArray(data) ? setPredictions(data) : [])
+      .catch(() => {});
+  }, [authed]);
 
   const login = async (e) => {
     e.preventDefault();
@@ -27,35 +36,7 @@ export default function AdminPage() {
     else setError("Wrong password!");
   };
 
-  useEffect(() => {
-    if (!authed) return;
-    fetch("/api/predictions")
-      .then((r) => r.json())
-      .then((data) => Array.isArray(data) ? setPredictions(data) : [])
-      .catch(() => {});
-  }, [authed]);
-
-  const filtered = predictions.filter((p) =>
-    p.name?.toLowerCase().includes(search.toLowerCase()) ||
-    p.finalWinner?.toLowerCase().includes(search.toLowerCase())
-  );
-
   if (checking) return null;
-
-  // Stats
-  const winnerCount = {};
-  const runnerUpCount = {};
-  const thirdCount = {};
-  predictions.forEach((p) => {
-    if (p.finalWinner) winnerCount[p.finalWinner] = (winnerCount[p.finalWinner] || 0) + 1;
-    const sf = p.semiFinal || [];
-    const ru = sf.find((t) => t !== p.finalWinner);
-    if (ru) runnerUpCount[ru] = (runnerUpCount[ru] || 0) + 1;
-    if (p.thirdPlace) thirdCount[p.thirdPlace] = (thirdCount[p.thirdPlace] || 0) + 1;
-  });
-  const topPick = Object.entries(winnerCount).sort((a, b) => b[1] - a[1])[0];
-  const topRunnerUp = Object.entries(runnerUpCount).sort((a, b) => b[1] - a[1])[0];
-  const topThird = Object.entries(thirdCount).sort((a, b) => b[1] - a[1])[0];
 
   if (!authed) {
     return (
@@ -84,6 +65,30 @@ export default function AdminPage() {
     );
   }
 
+  // Stats
+  const winnerCount = {};
+  const runnerUpCount = {};
+  const thirdCount = {};
+  predictions.forEach((p) => {
+    if (p.finalWinner) winnerCount[p.finalWinner] = (winnerCount[p.finalWinner] || 0) + 1;
+    const sf = p.semiFinal || [];
+    const ru = sf.find((t) => t !== p.finalWinner);
+    if (ru) runnerUpCount[ru] = (runnerUpCount[ru] || 0) + 1;
+    if (p.thirdPlace) thirdCount[p.thirdPlace] = (thirdCount[p.thirdPlace] || 0) + 1;
+  });
+  const topPick = Object.entries(winnerCount).sort((a, b) => b[1] - a[1])[0];
+  const topRunnerUp = Object.entries(runnerUpCount).sort((a, b) => b[1] - a[1])[0];
+  const topThird = Object.entries(thirdCount).sort((a, b) => b[1] - a[1])[0];
+
+  const filtered = predictions.filter((p) =>
+    p.name?.toLowerCase().includes(search.toLowerCase()) ||
+    p.finalWinner?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const PAGE_SIZE = 7;
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
   return (
     <main className="max-w-5xl mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
@@ -94,7 +99,6 @@ export default function AdminPage() {
         <span className="text-gray-400 text-sm">{predictions.length} total predictions</span>
       </div>
 
-      {/* Stats */}
       {topPick && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
@@ -123,11 +127,10 @@ export default function AdminPage() {
         className="w-full bg-gray-800 rounded-lg px-4 py-2 text-white outline-none focus:ring-2 focus:ring-yellow-400 mb-4"
         placeholder="Search by name or champion..."
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={(e) => { setSearch(e.target.value); setPage(1); }}
       />
 
-      {/* Main Table */}
-      <div className="overflow-x-auto rounded-xl border border-gray-800 mb-6">
+      <div className="overflow-x-auto rounded-xl border border-gray-800 mb-4">
         <table className="w-full text-sm">
           <thead className="bg-gray-800 text-gray-400">
             <tr>
@@ -142,24 +145,19 @@ export default function AdminPage() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((p, i) => {
+            {paginated.map((p, i) => {
               const semiFinal = p.semiFinal || [];
               const runnerUp = semiFinal.find((t) => t !== p.finalWinner) || "—";
               const thirdPlace = p.thirdPlace || "—";
-
               return (
                 <tr key={p._id} className="border-t border-gray-800 hover:bg-gray-900 transition">
-                  <td className="px-4 py-3 text-gray-500">{i + 1}</td>
+                  <td className="px-4 py-3 text-gray-500">{(page - 1) * PAGE_SIZE + i + 1}</td>
                   <td className="px-4 py-3 font-semibold text-white">{p.name}</td>
                   <td className="px-4 py-3">
-                    {p.finalWinner
-                      ? <span className="text-yellow-400 font-semibold">{p.finalWinner}</span>
-                      : <span className="text-gray-600">—</span>}
+                    {p.finalWinner ? <span className="text-yellow-400 font-semibold">{p.finalWinner}</span> : <span className="text-gray-600">—</span>}
                   </td>
                   <td className="px-4 py-3">
-                    {semiFinal.length === 2
-                      ? <span className="text-blue-400">{runnerUp}</span>
-                      : <span className="text-gray-600">—</span>}
+                    {semiFinal.length === 2 ? <span className="text-blue-400">{runnerUp}</span> : <span className="text-gray-600">—</span>}
                   </td>
                   <td className="px-4 py-3 text-gray-400">{thirdPlace}</td>
                   <td className="px-4 py-3">
@@ -171,10 +169,7 @@ export default function AdminPage() {
                     {p.createdAt ? new Date(p.createdAt).toLocaleDateString("en-GB") : "—"}
                   </td>
                   <td className="px-4 py-3">
-                    <button
-                      onClick={() => setExpanded(expanded === p._id ? null : p._id)}
-                      className="text-xs text-yellow-400 hover:underline"
-                    >
+                    <button onClick={() => setExpanded(expanded === p._id ? null : p._id)} className="text-xs text-yellow-400 hover:underline">
                       {expanded === p._id ? "Hide ▲" : "View ▼"}
                     </button>
                   </td>
@@ -183,12 +178,28 @@ export default function AdminPage() {
             })}
           </tbody>
         </table>
-        {filtered.length === 0 && (
-          <p className="text-center text-gray-500 py-10">No predictions found.</p>
-        )}
+        {filtered.length === 0 && <p className="text-center text-gray-500 py-10">No predictions found.</p>}
       </div>
 
-      {/* Expanded detail panel */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
+            className="px-3 py-1.5 rounded-lg bg-gray-800 text-gray-300 text-sm disabled:opacity-30 hover:bg-gray-700 transition">
+            ← Prev
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+            <button key={n} onClick={() => setPage(n)}
+              className={`px-3 py-1.5 rounded-lg text-sm transition ${n === page ? "bg-yellow-400 text-gray-900 font-bold" : "bg-gray-800 text-gray-300 hover:bg-gray-700"}`}>
+              {n}
+            </button>
+          ))}
+          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}
+            className="px-3 py-1.5 rounded-lg bg-gray-800 text-gray-300 text-sm disabled:opacity-30 hover:bg-gray-700 transition">
+            Next →
+          </button>
+        </div>
+      )}
+
       {expanded && (() => {
         const p = predictions.find((x) => x._id === expanded);
         if (!p) return null;
@@ -198,7 +209,6 @@ export default function AdminPage() {
               <h2 className="text-lg font-bold text-white">{p.name}&apos;s Full Prediction</h2>
               <button onClick={() => setExpanded(null)} className="text-gray-500 hover:text-white text-sm">✕ Close</button>
             </div>
-
             {p.groupPredictions && (
               <div>
                 <p className="text-yellow-400 font-semibold mb-2 text-sm">Group Stage</p>
@@ -214,7 +224,6 @@ export default function AdminPage() {
                 </div>
               </div>
             )}
-
             {[
               { key: "roundOf32", label: "Round of 32" },
               { key: "roundOf16", label: "Round of 16" },
@@ -232,7 +241,6 @@ export default function AdminPage() {
                 </div>
               ) : null
             )}
-
             {p.finalWinner && (
               <div className="bg-yellow-400 text-gray-900 rounded-xl p-3 text-center font-bold">
                 🏆 Champion: {p.finalWinner}
